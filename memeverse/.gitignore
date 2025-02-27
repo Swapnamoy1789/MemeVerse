@@ -30,3 +30,5 @@ utils/firebase.js
 # Ignore Firestore and Storage rules
 firestore.rules
 storage.rules
+
+.vercel
