@@ -39,26 +39,18 @@ export default function Leaderboard() {
         const querySnapshot = await getDocs(collection(db, "memes"));
 
         querySnapshot.docs.forEach((doc) => {
-            const meme = doc.data();
-            const uploadedBy = meme.uploadedBy || savedName; // ✅ Fetch stored uploader from Firestore
-          
-            // ✅ Count memes uploaded per user
-            if (userUploads[uploadedBy]) {
-              userUploads[uploadedBy]++;
-            } else {
-              userUploads[uploadedBy] = 1;
-            }
-          });
-          
+          const meme = doc.data();
+          const uploadedBy = meme.uploadedBy || "Anonymous"; // ✅ Fetch stored uploader from Firestore
+
+          // ✅ Count memes uploaded per user
+          if (userUploads[uploadedBy]) {
+            userUploads[uploadedBy]++;
+          } else {
+            userUploads[uploadedBy] = 1;
+          }
+        });
 
         console.log("🔥 Uploaded memes fetched from Firestore:", userUploads);
-
-        // ✅ Fetch Updated Likes from LocalStorage
-        Object.keys(usersData).forEach((username) => {
-          usersData[username].totalLikes = Object.keys(localStorage)
-            .filter((key) => key.startsWith("meme_likes_"))
-            .reduce((acc, key) => acc + Number(localStorage.getItem(key) || 0), 0);
-        });
 
         // ✅ Merge Firestore meme upload count with LocalStorage user data
         const rankedUsers = Object.keys(usersData).map((username) => ({
