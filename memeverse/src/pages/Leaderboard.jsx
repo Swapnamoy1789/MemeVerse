@@ -56,7 +56,7 @@ export default function Leaderboard() {
         const rankedUsers = Object.keys(usersData).map((username) => ({
           username,
           memesUploaded: userUploads[username] || 0, // ✅ Fetch from Firestore
-          totalLikes: usersData[username]?.totalLikes || 0, // ✅ Fetch latest likes from LocalStorage
+          totalLikes: usersData[username]?.totalLikes || 0, // ✅ Fetch from LocalStorage
           engagementScore: (userUploads[username] || 0) * 2 + (usersData[username]?.totalLikes || 0), // ✅ Engagement formula
         }));
 

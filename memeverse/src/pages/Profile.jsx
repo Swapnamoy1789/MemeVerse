@@ -1,10 +1,9 @@
 import { useEffect, useState } from "react";
 import { db } from "../utils/firebase";
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { motion } from "framer-motion"; // ✅ Animations
 
 export default function Profile() {
-  const [name, setName] = useState(localStorage.getItem("name") || "Anonymous");
+  const [name, setName] = useState(localStorage.getItem("name") || "");
   const [bio, setBio] = useState(localStorage.getItem("bio") || "");
   const [profilePic, setProfilePic] = useState(localStorage.getItem("profilePic") || "");
   const [likedMemes, setLikedMemes] = useState([]);
@@ -16,7 +15,7 @@ export default function Profile() {
     setLikedMemes(storedLikes);
   }, []);
 
-  // ✅ Fetch only user's uploaded memes
+  // ✅ Fetch user-uploaded memes from Firestore
   useEffect(() => {
     const fetchUserMemes = async () => {
       try {
@@ -24,12 +23,10 @@ export default function Profile() {
         const q = query(memesCollection, orderBy("createdAt", "desc"));
         const querySnapshot = await getDocs(q);
 
-        const fetchedMemes = querySnapshot.docs
-          .map((doc) => ({
-            id: doc.id,
-            ...doc.data(),
-          }))
-          .filter((meme) => meme.uploadedBy === name); // ✅ Show only current user memes
+        const fetchedMemes = querySnapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        })).filter(meme => meme.uploadedBy === name); // ✅ Only show memes uploaded by this user
 
         setUserMemes(fetchedMemes);
       } catch (error) {
@@ -47,6 +44,19 @@ export default function Profile() {
     alert("Profile updated!");
   };
 
+  // ✅ Handle profile picture update
+  const handleProfilePicUpdate = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setProfilePic(reader.result);
+        localStorage.setItem("profilePic", reader.result);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
   return (
     <div className="p-5 max-w-3xl mx-auto">
       <h1 className="text-3xl font-bold text-center">User Profile</h1>
@@ -58,6 +68,7 @@ export default function Profile() {
           alt="Profile"
           className="rounded-full w-24 h-24 border-2 object-cover"
         />
+        <input type="file" accept="image/*" className="mt-2" onChange={handleProfilePicUpdate} />
       </div>
 
       {/* Name & Bio Edit */}
@@ -75,13 +86,9 @@ export default function Profile() {
           value={bio}
           onChange={(e) => setBio(e.target.value)}
         />
-        <motion.button
-          whileHover={{ scale: 1.05 }}
-          className="bg-blue-500 text-white px-4 py-2 mt-2 rounded"
-          onClick={handleProfileUpdate}
-        >
+        <button className="bg-blue-500 text-white px-4 py-2 mt-2 rounded" onClick={handleProfileUpdate}>
           Save Profile
-        </motion.button>
+        </button>
       </div>
 
       {/* Liked Memes Section */}
@@ -89,15 +96,7 @@ export default function Profile() {
       <div className="grid grid-cols-3 gap-4 mt-4">
         {likedMemes.length > 0 ? (
           likedMemes.map((meme) => (
-            <motion.img
-              key={meme.id}
-              src={meme.url}
-              alt={meme.name}
-              className="rounded-lg shadow-lg w-full"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            />
+            <img key={meme.id} src={meme.url} alt={meme.name} className="rounded-lg shadow-lg w-full" />
           ))
         ) : (
           <p className="text-gray-500 text-center col-span-3">No liked memes yet.</p>
@@ -109,16 +108,10 @@ export default function Profile() {
       <div className="grid grid-cols-3 gap-4 mt-4">
         {userMemes.length > 0 ? (
           userMemes.map((meme) => (
-            <motion.div
-              key={meme.id}
-              className="rounded-lg shadow-lg overflow-hidden"
-              initial={{ scale: 0.9 }}
-              animate={{ scale: 1 }}
-              transition={{ duration: 0.3 }}
-            >
+            <div key={meme.id} className="rounded-lg shadow-lg overflow-hidden">
               <img src={meme.memeUrl} alt="Uploaded Meme" className="w-full h-auto rounded-lg" />
               <p className="text-center font-bold mt-2">{meme.topText} {meme.bottomText}</p>
-            </motion.div>
+            </div>
           ))
         ) : (
           <p className="text-gray-500 text-center col-span-3">No memes uploaded yet.</p>
