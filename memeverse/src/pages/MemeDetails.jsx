@@ -11,6 +11,9 @@ export default function MemeDetails() {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
 
+  // ✅ Fetch username from localStorage
+  const savedName = localStorage.getItem("name") || "Anonymous";
+
   // ✅ Fetch meme details from localStorage
   useEffect(() => {
     const savedMemes = JSON.parse(localStorage.getItem("memes")) || [];
@@ -24,34 +27,29 @@ export default function MemeDetails() {
   }, [id]);
 
   // ✅ Handle Like Button
-  
-  
   const handleLike = () => {
     const updatedLikes = likes + 1;
     setLikes(updatedLikes);
-  
+
     // ✅ Store likes for this meme in LocalStorage
     localStorage.setItem(`meme_likes_${id}`, updatedLikes);
-  
+
     // ✅ Update meme data in LocalStorage
     let cachedMemes = JSON.parse(localStorage.getItem("cachedMemes")) || [];
     cachedMemes = cachedMemes.map((meme) =>
       meme.id === id ? { ...meme, likes: updatedLikes } : meme
     );
     localStorage.setItem("cachedMemes", JSON.stringify(cachedMemes));
-  
-    // ✅ Also update total user likes in LocalStorage
+
+    // ✅ Ensure `userData` exists in LocalStorage and update likes count
     const storedUserData = JSON.parse(localStorage.getItem("userData")) || {};
-    const updatedUserData = {
-      ...storedUserData,
-      [savedName]: {
-        ...storedUserData[savedName],
-        totalLikes: (storedUserData[savedName]?.totalLikes || 0) + 1, // ✅ Increment total likes
-      },
+    storedUserData[savedName] = {
+      ...storedUserData[savedName],
+      totalLikes: (storedUserData[savedName]?.totalLikes || 0) + 1, // ✅ Increment total likes
     };
-    localStorage.setItem("userData", JSON.stringify(updatedUserData));
+
+    localStorage.setItem("userData", JSON.stringify(storedUserData));
   };
-  
 
   // ✅ Handle Comment Submission
   const handleComment = () => {
