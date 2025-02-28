@@ -1,21 +1,17 @@
 import axios from "axios";
 
-
-  
-
-
 // Fetch memes from Imgflip API
 export const fetchMemes = async (page = 1) => {
     const cachedMemes = JSON.parse(localStorage.getItem("memes"));
   
-    if (cachedMemes && page === 1) return cachedMemes; // ✅ Use cache if available
+    if (cachedMemes && page === 1) return cachedMemes; //  Use cache if available
   
     try {
       const response = await fetch("https://api.imgflip.com/get_memes");
       const data = await response.json();
   
       if (data.success) {
-        localStorage.setItem("memes", JSON.stringify(data.data.memes)); // ✅ Store memes
+        localStorage.setItem("memes", JSON.stringify(data.data.memes)); //  Store memes
         return data.data.memes;
       }
     } catch (error) {
