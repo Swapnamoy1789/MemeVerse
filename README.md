@@ -29,7 +29,7 @@ APIs Used: Meme Generator API, Firebase API
 State Management: Redux Toolkit
 Hosting: Vercel
 🔥 Live Demo
-🚀 MemeVerse on Vercel (https://memeverse-fawn.vercel.app)
+🚀 MemeVerse on Vercel (https://memeverse-mauve.vercel.app/)
 
 📜 Installation & Setup
 1️⃣ Clone the Repository:
