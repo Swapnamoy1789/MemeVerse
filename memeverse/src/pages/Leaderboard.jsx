@@ -6,70 +6,70 @@ export default function Leaderboard() {
   const [topMemes, setTopMemes] = useState([]);
   const [userRankings, setUserRankings] = useState([]);
 
-  // ✅ Fetch Top 10 Most Liked Memes from LocalStorage
+  //  Fetch Top 10 Most Liked Memes from LocalStorage
   useEffect(() => {
     const fetchTopMemes = () => {
       let storedLikedMemes = JSON.parse(localStorage.getItem("likedMemes")) || [];
-      let storedMemes = JSON.parse(localStorage.getItem("memes")) || []; // ✅ Fetch memes
+      let storedMemes = JSON.parse(localStorage.getItem("memes")) || []; //  Fetch memes
 
-      console.log("🔥 Liked Memes from LocalStorage:", storedLikedMemes);
-      console.log("🔥 All Memes from LocalStorage:", storedMemes);
+      console.log(" Liked Memes from LocalStorage:", storedLikedMemes);
+      console.log(" All Memes from LocalStorage:", storedMemes);
 
-      // ✅ Match liked memes with stored memes to get the image URL
+      //  Match liked memes with stored memes to get the image URL
       const likedMemesWithImages = storedLikedMemes.map((likedMeme) => {
         const matchingMeme = storedMemes.find((meme) => meme.id === likedMeme.id);
         return {
           ...likedMeme,
-          memeUrl: matchingMeme ? matchingMeme.url : null, // ✅ Ensure memeUrl is present
+          memeUrl: matchingMeme ? matchingMeme.url : null, // Ensure memeUrl is present
         };
       });
 
-      // ✅ Filter memes that have images & sort by likes
+      // Filter memes that have images & sort by likes
       const sortedTopMemes = likedMemesWithImages
         .filter((meme) => meme.memeUrl) // Ensure URL exists
         .sort((a, b) => b.likes - a.likes)
         .slice(0, 10); // Get top 10
 
-      console.log("🔥 Top 10 Memes with Images:", sortedTopMemes);
+      console.log(" Top 10 Memes with Images:", sortedTopMemes);
       setTopMemes(sortedTopMemes);
     };
 
     fetchTopMemes();
   }, []);
 
-  // ✅ Fetch User Rankings based on Uploads
+  // Fetch User Rankings based on Uploads
   useEffect(() => {
     const fetchUserRankings = async () => {
       try {
         const memesCollection = collection(db, "memes");
         const querySnapshot = await getDocs(memesCollection);
 
-        const userStats = {}; // ✅ Store user data (username, uploads)
+        const userStats = {}; // Store user data (username, uploads)
 
         querySnapshot.docs.forEach((doc) => {
           const meme = doc.data();
           const username = meme.username || "Anonymous";
 
-          // ✅ Track user uploads count
+          // Track user uploads count
           if (!userStats[username]) {
             userStats[username] = { memesUploaded: 0 };
           }
           userStats[username].memesUploaded += 1;
         });
 
-        // ✅ Convert to array and rank users
+        // Convert to array and rank users
         const rankedUsers = Object.keys(userStats)
           .filter((username) => username !== "Anonymous")
           .map((username) => ({
             username,
             memesUploaded: userStats[username].memesUploaded,
           }))
-          .sort((a, b) => b.memesUploaded - a.memesUploaded); // ✅ Sort by uploaded memes
+          .sort((a, b) => b.memesUploaded - a.memesUploaded); // Sort by uploaded memes
 
-        console.log("🔥 Ranked Users:", rankedUsers);
+        console.log(" Ranked Users:", rankedUsers);
         setUserRankings(rankedUsers);
       } catch (error) {
-        console.error("🔥 Error fetching user rankings:", error);
+        console.error(" Error fetching user rankings:", error);
       }
     };
 
@@ -80,7 +80,7 @@ export default function Leaderboard() {
     <div className="p-5">
       <h1 className="text-3xl font-bold text-center">🏆 Meme Leaderboard</h1>
 
-      {/* 🔥 Top 10 Most Liked Memes */}
+      {/*  Top 10 Most Liked Memes */}
       <h2 className="text-2xl font-semibold mt-6">🔥 Top 10 Most Liked Memes</h2>
       <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 mt-4">
         {topMemes.length > 0 ? (

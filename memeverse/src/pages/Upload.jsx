@@ -13,7 +13,7 @@ export default function Upload() {
   const [user, setUser] = useState(null);
   const [username, setUsername] = useState("Anonymous");
 
-  // ✅ Fetch Meme Templates & User Info
+  //  Fetch Meme Templates & User Info
   useEffect(() => {
     const fetchData = async () => {
       const memeData = await fetchMemes();
@@ -40,7 +40,7 @@ export default function Upload() {
     fetchData();
   }, []);
 
-  // ✅ Handle Meme Upload
+  //  Handle Meme Upload
   const handleGenerateMeme = async () => {
     if (!selectedTemplate) {
       alert("Please select a meme template!");
@@ -57,7 +57,7 @@ export default function Upload() {
     if (url) {
       setMemeUrl(url);
 
-      // ✅ Save meme to Firestore
+      //  Save meme to Firestore
       try {
         await addDoc(collection(db, "memes"), {
           topText,
@@ -65,16 +65,16 @@ export default function Upload() {
           memeUrl: url,
           templateId: selectedTemplate,
           uploadedBy: user.uid,
-          username: username, // ✅ Store correct username
+          username: username, //  Store correct username
           createdAt: serverTimestamp(),
         });
 
         alert("Meme successfully uploaded!");
       } catch (error) {
-        console.error("🔥 Error saving meme to Firestore:", error);
+        console.error(" Error saving meme to Firestore:", error);
       }
     } else {
-      console.error("❌ Failed to generate meme");
+      console.error(" Failed to generate meme");
     }
     setLoading(false);
   };

@@ -11,10 +11,10 @@ export default function MemeDetails() {
   const [comments, setComments] = useState([]);
   const [commentText, setCommentText] = useState("");
 
-  // ✅ Fetch username from localStorage
+  //  Fetch username from localStorage
   const savedName = localStorage.getItem("name") || "Anonymous";
 
-  // ✅ Fetch meme details from localStorage
+  //  Fetch meme details from localStorage
   /*useEffect(() => {
     const savedMemes = JSON.parse(localStorage.getItem("memes")) || [];
     const selectedMeme = savedMemes.find((m) => m.id.toString() === id.toString());
@@ -32,37 +32,37 @@ export default function MemeDetails() {
     if (selectedMeme) {
       setMeme(selectedMeme);
   
-      // ✅ Get likes from LocalStorage
+      //  Get likes from LocalStorage
       const storedLikes = JSON.parse(localStorage.getItem("likedMemes")) || [];
       const likedMeme = storedLikes.find((m) => m.id === id);
       setLikes(likedMeme ? likedMeme.likes : selectedMeme.likes || 0);
   
-      // ✅ Get comments from LocalStorage
+      //  Get comments from LocalStorage
       const storedComments = JSON.parse(localStorage.getItem(`meme_comments_${id}`)) || [];
-      setComments(storedComments); // ✅ Update state with stored comments
+      setComments(storedComments); //  Update state with stored comments
     }
-  }, [id, likes, comments]); // ✅ Re-fetch when likes or comments change
+  }, [id, likes, comments]); //  Re-fetch when likes or comments change
   
-  // ✅ Handle Like Button
+  //  Handle Like Button
   /*const handleLike = () => {
     const updatedLikes = likes + 1;
     setLikes(updatedLikes);
 
-    // ✅ Store likes for this meme in LocalStorage
+    //  Store likes for this meme in LocalStorage
     localStorage.setItem(`meme_likes_${id}`, updatedLikes);
 
-    // ✅ Update meme data in LocalStorage
+    //  Update meme data in LocalStorage
     let cachedMemes = JSON.parse(localStorage.getItem("cachedMemes")) || [];
     cachedMemes = cachedMemes.map((meme) =>
       meme.id === id ? { ...meme, likes: updatedLikes } : meme
     );
     localStorage.setItem("cachedMemes", JSON.stringify(cachedMemes));
 
-    // ✅ Ensure `userData` exists in LocalStorage and update likes count
+    //  Ensure `userData` exists in LocalStorage and update likes count
     const storedUserData = JSON.parse(localStorage.getItem("userData")) || {};
     storedUserData[savedName] = {
       ...storedUserData[savedName],
-      totalLikes: (storedUserData[savedName]?.totalLikes || 0) + 1, // ✅ Increment total likes
+      totalLikes: (storedUserData[savedName]?.totalLikes || 0) + 1, //  Increment total likes
     };
 
     localStorage.setItem("userData", JSON.stringify(storedUserData));
@@ -70,19 +70,19 @@ export default function MemeDetails() {
 */
 const handleLike = () => {
   const updatedLikes = likes + 1;
-  setLikes(updatedLikes); // ✅ Update UI immediately
+  setLikes(updatedLikes); //  Update UI immediately
 
-  // ✅ Get existing liked memes from LocalStorage
+  //  Get existing liked memes from LocalStorage
   let likedMemes = JSON.parse(localStorage.getItem("likedMemes")) || [];
 
-  // ✅ Check if meme is already in likedMemes array
+  //  Check if meme is already in likedMemes array
   const existingMemeIndex = likedMemes.findIndex(meme => meme.id === id);
   
   if (existingMemeIndex !== -1) {
-    // ✅ If meme exists, update like count
+    //  If meme exists, update like count
     likedMemes[existingMemeIndex].likes = updatedLikes;
   } else {
-    // ✅ If meme is new, add it to LocalStorage
+    //  If meme is new, add it to LocalStorage
     likedMemes.push({ 
       id, 
       memeUrl: meme.memeUrl, 
@@ -91,12 +91,12 @@ const handleLike = () => {
     });
   }
 
-  // ✅ Store updated Liked Memes in Local Storage
+  //  Store updated Liked Memes in Local Storage
   localStorage.setItem("likedMemes", JSON.stringify(likedMemes));
 };
 
 
-  // ✅ Handle Comment Submission
+  //  Handle Comment Submission
   const handleComment = () => {
     if (commentText.trim() === "") return;
 
@@ -107,7 +107,7 @@ const handleLike = () => {
     localStorage.setItem(`meme_comments_${id}`, JSON.stringify(updatedComments));
   };
 
-  // ✅ Handle Share Button (Copies Meme URL to Clipboard)
+  //  Handle Share Button (Copies Meme URL to Clipboard)
   const handleShare = () => {
     navigator.clipboard.writeText(window.location.href);
     alert("Meme link copied to clipboard! 📋");

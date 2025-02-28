@@ -3,8 +3,8 @@ import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
 import { setMemes } from "../redux/memeSlice";
 import { fetchMemes } from "../utils/api";
-import { motion } from "framer-motion"; // ✅ Import Framer Motion for animations
-import { getAuth, signOut } from "firebase/auth"; // ✅ Firebase Authentication
+import { motion } from "framer-motion"; 
+import { getAuth, signOut } from "firebase/auth"; 
 
 export default function Home() {
   const dispatch = useDispatch();
@@ -12,23 +12,23 @@ export default function Home() {
   const [darkMode, setDarkMode] = useState(false);
   const navigate = useNavigate();
 
-  // ✅ Firebase Authentication State
+  //  Firebase Authentication State
   const auth = getAuth();
-  const user = auth.currentUser; // ✅ Get logged-in user
+  const user = auth.currentUser; //  Get logged-in user
 
   useEffect(() => {
     fetchMemes().then((data) => dispatch(setMemes(data)));
   }, [dispatch]);
 
-  // ✅ Handle Logout
+  //  Handle Logout
   const handleLogout = async () => {
     await signOut(auth);
-    navigate("/login"); // ✅ Redirect to login page
+    navigate("/login"); //  Redirect to login page
   };
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 20 }} // ✅ Page Transition Animation
+      initial={{ opacity: 0, y: 20 }} // Page Transition Animation
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} min-h-screen p-5`}
@@ -75,8 +75,8 @@ export default function Home() {
         ].map((button, index) => (
           <Link key={index} to={button.to}>
             <motion.button
-              whileHover={{ scale: 1.05, opacity: 0.9 }} // ✅ Hover Animation
-              whileTap={{ scale: 0.95 }} // ✅ Click Animation
+              whileHover={{ scale: 1.05, opacity: 0.9 }} //  Hover Animation
+              whileTap={{ scale: 0.95 }} //  Click Animation
               transition={{ duration: 0.2 }}
               className={`${button.color} text-white px-4 py-2 rounded-lg shadow-lg w-full sm:w-auto`}
             >

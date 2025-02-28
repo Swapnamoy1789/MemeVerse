@@ -18,7 +18,7 @@ export default function Login() {
       if (isSignup) {
         userCredential = await createUserWithEmailAndPassword(auth, email, password);
         
-        // ✅ Add new user to Firestore's users collection
+        //  Add new user to Firestore's users collection
         const userRef = doc(db, "users", userCredential.user.uid);
         const userSnap = await getDoc(userRef);
         
@@ -29,7 +29,7 @@ export default function Login() {
             bio: "",
             profilePic: "https://via.placeholder.com/100",
           });
-          console.log("✅ New user added to Firestore.");
+          console.log(" New user added to Firestore.");
         }
       } else {
         userCredential = await signInWithEmailAndPassword(auth, email, password);

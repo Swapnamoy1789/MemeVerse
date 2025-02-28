@@ -15,10 +15,10 @@ export default function App() {
       <Route path="/explore" element={<Explore />} />
       <Route path="/upload" element={<Upload />} />
       <Route path="/meme/:id" element={<MemeDetails />} />
-      <Route path="/profile" element={<Profile />} /> {/* ✅ Added profile page */}
+      <Route path="/profile" element={<Profile />} /> 
       <Route path="/leaderboard" element={<Leaderboard/>} />
       <Route path="/login" element={<Login/>} />
-      <Route path="*" element={<NotFound/>} /> {/* Catch-all route for 404 */}
+      <Route path="*" element={<NotFound/>} /> 
 
     </Routes>
   );

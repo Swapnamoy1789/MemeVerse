@@ -13,7 +13,7 @@ export default function Explore() {
   const [page, setPage] = useState(1);
   const [loading, setLoading] = useState(false);
 
-  // ✅ Fetch memes with pagination
+  //  Fetch memes with pagination
   useEffect(() => {
     setLoading(true);
     fetchMemes(page, category).then((newMemes) => {
@@ -22,7 +22,7 @@ export default function Explore() {
     });
   }, [page, category]);
 
-  // ✅ Fetch likes from localStorage and merge with memes
+  //  Fetch likes from localStorage and merge with memes
   useEffect(() => {
     const likedMemes = JSON.parse(localStorage.getItem("likedMemes")) || [];
     const likesMap = Object.fromEntries(likedMemes.map((m) => [m.id, m.likes])); // Create a map of likes
@@ -36,7 +36,7 @@ export default function Explore() {
     setFilteredMemes(updatedMemes);
   }, [memes, sortBy]);
 
-  // ✅ Search with debounce
+  //  Search with debounce
   const handleSearch = useCallback(
     debounce((query) => {
       setSearch(query);
@@ -57,7 +57,7 @@ export default function Explore() {
     }
   }, [search, memes]);
 
-  // ✅ Sorting function (likes & comments)
+  //  Sorting function (likes & comments)
   useEffect(() => {
     setFilteredMemes((prev) =>
       [...prev].sort((a, b) => {
@@ -68,7 +68,7 @@ export default function Explore() {
     );
   }, [sortBy]);
 
-  // ✅ Infinite Scroll
+  //  Infinite Scroll
   useEffect(() => {
     const handleScroll = () => {
       if (window.innerHeight + window.scrollY >= document.body.offsetHeight - 200 && !loading) {

@@ -11,7 +11,7 @@ export default function Profile() {
   const [userMemes, setUserMemes] = useState([]);
   const navigate = useNavigate();
 
-  // ✅ Fetch user details from Firestore when logged in
+  //  Fetch user details from Firestore when logged in
   useEffect(() => {
     const fetchUserData = async () => {
       if (!auth.currentUser) return;
@@ -26,27 +26,27 @@ export default function Profile() {
         setBio(userData.bio || "No bio added yet.");
         setProfilePic(userData.profilePic || "");
 
-        console.log("✅ Username fetched from Firestore:", userData.name);
+        console.log(" Username fetched from Firestore:", userData.name);
         
-        // ✅ Fetch uploaded memes using this username
+        //  Fetch uploaded memes using this username
         fetchUserMemes(userData.name);
       } else {
-        console.log("⚠️ No user document found in Firestore.");
+        console.log(" No user document found in Firestore.");
       }
     };
 
     fetchUserData();
   }, []);
 
-  // ✅ Fetch uploaded memes by matching the username
+  //  Fetch uploaded memes by matching the username
   const fetchUserMemes = async (fetchedUsername) => {
     if (!fetchedUsername) {
-      console.log("⚠️ Username is empty, cannot fetch memes.");
+      console.log(" Username is empty, cannot fetch memes.");
       return;
     }
 
     try {
-      console.log("🔍 Fetching memes for username:", fetchedUsername);
+      console.log(" Fetching memes for username:", fetchedUsername);
       
       const memesCollection = collection(db, "memes");
       const q = query(memesCollection, where("username", "==", fetchedUsername), orderBy("createdAt", "desc"));
@@ -57,14 +57,14 @@ export default function Profile() {
         ...doc.data(),
       }));
 
-      console.log("✅ Fetched uploaded memes:", fetchedMemes);
+      console.log(" Fetched uploaded memes:", fetchedMemes);
       setUserMemes(fetchedMemes);
     } catch (error) {
-      console.error("🔥 Error fetching uploaded memes:", error);
+      console.error(" Error fetching uploaded memes:", error);
     }
   };
 
-  // ✅ Handle profile update
+  //  Handle profile update
   const handleProfileUpdate = async () => {
     if (!user) {
       alert("You must be logged in to update your profile!");
@@ -77,7 +77,7 @@ export default function Profile() {
     alert("Profile updated successfully!");
   };
 
-  // ✅ Handle profile picture upload
+  //  Handle profile picture upload
   const handleProfilePicUpload = (event) => {
     const file = event.target.files[0];
     if (!file) return;
