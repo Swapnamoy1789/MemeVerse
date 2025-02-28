@@ -1,62 +1,80 @@
 import { useEffect, useState } from "react";
-import { db } from "../utils/firebase";
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { motion } from "framer-motion";
+import { db, auth } from "../utils/firebase";
+import { doc, getDoc, collection, getDocs, query, where, orderBy, updateDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 export default function Profile() {
-  const [name, setName] = useState(localStorage.getItem("name") || "Anonymous");
-  const [bio, setBio] = useState(localStorage.getItem("bio") || "");
-  const [profilePic, setProfilePic] = useState(localStorage.getItem("profilePic") || "");
-  const [likedMemes, setLikedMemes] = useState([]);
+  const [user, setUser] = useState(null);
+  const [name, setName] = useState("");
+  const [bio, setBio] = useState("");
+  const [profilePic, setProfilePic] = useState("");
   const [userMemes, setUserMemes] = useState([]);
+  const navigate = useNavigate();
 
-  // ✅ Fetch liked memes from localStorage properly
+  // ✅ Fetch user details from Firestore when logged in
   useEffect(() => {
-    const fetchLikedMemes = () => {
-      const storedLikes = Object.keys(localStorage)
-        .filter((key) => key.startsWith("meme_likes_"))
-        .map((key) => {
-          const memeId = key.replace("meme_likes_", "");
-          return {
-            id: memeId,
-            likes: Number(localStorage.getItem(key)),
-            url: JSON.parse(localStorage.getItem("cachedMemes") || "[]").find((m) => m.id === memeId)?.url || "",
-          };
-        })
-        .filter((meme) => meme.url !== ""); // Remove memes without a valid URL
+    const fetchUserData = async () => {
+      if (!auth.currentUser) return;
+      setUser(auth.currentUser);
 
-      setLikedMemes(storedLikes);
-    };
+      const userRef = doc(db, "users", auth.currentUser.uid);
+      const userSnap = await getDoc(userRef);
 
-    fetchLikedMemes();
-  }, []);
+      if (userSnap.exists()) {
+        const userData = userSnap.data();
+        setName(userData.name || "Anonymous");
+        setBio(userData.bio || "No bio added yet.");
+        setProfilePic(userData.profilePic || "");
 
-  // ✅ Fetch user-uploaded memes from Firestore
-  useEffect(() => {
-    const fetchUserMemes = async () => {
-      try {
-        const memesCollection = collection(db, "memes");
-        const q = query(memesCollection, orderBy("createdAt", "desc"));
-        const querySnapshot = await getDocs(q);
-
-        const fetchedMemes = querySnapshot.docs
-          .map((doc) => ({ id: doc.id, ...doc.data() }))
-          .filter((meme) => meme.uploadedBy === name); // Show only current user's uploaded memes
-
-        setUserMemes(fetchedMemes);
-      } catch (error) {
-        console.error("🔥 Error fetching user memes:", error);
+        console.log("✅ Username fetched from Firestore:", userData.name);
+        
+        // ✅ Fetch uploaded memes using this username
+        fetchUserMemes(userData.name);
+      } else {
+        console.log("⚠️ No user document found in Firestore.");
       }
     };
 
-    fetchUserMemes();
-  }, [name]);
+    fetchUserData();
+  }, []);
+
+  // ✅ Fetch uploaded memes by matching the username
+  const fetchUserMemes = async (fetchedUsername) => {
+    if (!fetchedUsername) {
+      console.log("⚠️ Username is empty, cannot fetch memes.");
+      return;
+    }
+
+    try {
+      console.log("🔍 Fetching memes for username:", fetchedUsername);
+      
+      const memesCollection = collection(db, "memes");
+      const q = query(memesCollection, where("username", "==", fetchedUsername), orderBy("createdAt", "desc"));
+      const querySnapshot = await getDocs(q);
+
+      const fetchedMemes = querySnapshot.docs.map((doc) => ({
+        id: doc.id,
+        ...doc.data(),
+      }));
+
+      console.log("✅ Fetched uploaded memes:", fetchedMemes);
+      setUserMemes(fetchedMemes);
+    } catch (error) {
+      console.error("🔥 Error fetching uploaded memes:", error);
+    }
+  };
 
   // ✅ Handle profile update
-  const handleProfileUpdate = () => {
-    localStorage.setItem("name", name);
-    localStorage.setItem("bio", bio);
-    alert("Profile updated!");
+  const handleProfileUpdate = async () => {
+    if (!user) {
+      alert("You must be logged in to update your profile!");
+      return;
+    }
+
+    const userRef = doc(db, "users", user.uid);
+    await updateDoc(userRef, { name, bio });
+
+    alert("Profile updated successfully!");
   };
 
   // ✅ Handle profile picture upload
@@ -65,9 +83,13 @@ export default function Profile() {
     if (!file) return;
 
     const reader = new FileReader();
-    reader.onloadend = () => {
-      localStorage.setItem("profilePic", reader.result);
+    reader.onloadend = async () => {
       setProfilePic(reader.result);
+
+      if (user) {
+        const userRef = doc(db, "users", user.uid);
+        await updateDoc(userRef, { profilePic: reader.result });
+      }
     };
     reader.readAsDataURL(file);
   };
@@ -78,81 +100,59 @@ export default function Profile() {
 
       {/* Profile Picture & Upload */}
       <div className="flex flex-col items-center mt-4">
-        <motion.img
+        <img
           src={profilePic || "https://via.placeholder.com/100"}
           alt="Profile"
           className="rounded-full w-24 h-24 border-2 object-cover"
-          initial={{ opacity: 0, scale: 0.8 }}
-          animate={{ opacity: 1, scale: 1 }}
-          transition={{ duration: 0.5 }}
         />
         <input type="file" accept="image/*" className="mt-2" onChange={handleProfilePicUpload} />
       </div>
 
-      {/* Name & Bio Edit */}
-      <div className="mt-4">
+      {/* Name & Bio */}
+      <div className="mt-4 text-center">
         <input
           type="text"
           placeholder="Your Name"
-          className="w-full p-2 border rounded mt-2"
+          className="w-full p-2 border rounded mt-2 text-center"
           value={name}
           onChange={(e) => setName(e.target.value)}
         />
         <textarea
           placeholder="Your Bio"
-          className="w-full p-2 border rounded mt-2"
+          className="w-full p-2 border rounded mt-2 text-center"
           value={bio}
           onChange={(e) => setBio(e.target.value)}
         />
-        <motion.button
-          whileTap={{ scale: 0.9 }}
+        <button
           className="bg-blue-500 text-white px-4 py-2 mt-2 rounded"
           onClick={handleProfileUpdate}
         >
           Save Profile
-        </motion.button>
+        </button>
       </div>
 
-      {/* Liked Memes Section */}
-      <h2 className="text-xl font-semibold mt-6">Liked Memes</h2>
-      <div className="grid grid-cols-3 gap-4 mt-4">
-        {likedMemes.length > 0 ? (
-          likedMemes.map((meme) => (
-            <motion.img
-              key={meme.id}
-              src={meme.url}
-              alt="Liked Meme"
-              className="rounded-lg shadow-lg w-full"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            />
-          ))
-        ) : (
-          <p className="text-gray-500 text-center col-span-3">No liked memes yet.</p>
-        )}
-      </div>
-
-      {/* User Uploaded Memes */}
+      {/* Uploaded Memes Section */}
       <h2 className="text-xl font-semibold mt-6">Your Uploaded Memes</h2>
       <div className="grid grid-cols-3 gap-4 mt-4">
         {userMemes.length > 0 ? (
           userMemes.map((meme) => (
-            <motion.div
-              key={meme.id}
-              className="rounded-lg shadow-lg overflow-hidden"
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.5 }}
-            >
+            <div key={meme.id} className="rounded-lg shadow-lg overflow-hidden">
               <img src={meme.memeUrl} alt="Uploaded Meme" className="w-full h-auto rounded-lg" />
               <p className="text-center font-bold mt-2">{meme.topText} {meme.bottomText}</p>
-            </motion.div>
+            </div>
           ))
         ) : (
           <p className="text-gray-500 text-center col-span-3">No memes uploaded yet.</p>
         )}
       </div>
+
+      {/* Back to Home Button */}
+      <button
+        className="bg-gray-500 text-white px-4 py-2 mt-4 rounded"
+        onClick={() => navigate("/")}
+      >
+        Back to Home
+      </button>
     </div>
   );
 }

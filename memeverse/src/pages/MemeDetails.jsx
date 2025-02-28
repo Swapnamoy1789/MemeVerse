@@ -15,7 +15,7 @@ export default function MemeDetails() {
   const savedName = localStorage.getItem("name") || "Anonymous";
 
   // ✅ Fetch meme details from localStorage
-  useEffect(() => {
+  /*useEffect(() => {
     const savedMemes = JSON.parse(localStorage.getItem("memes")) || [];
     const selectedMeme = savedMemes.find((m) => m.id.toString() === id.toString());
 
@@ -24,10 +24,27 @@ export default function MemeDetails() {
       setLikes(parseInt(localStorage.getItem(`meme_likes_${id}`)) || selectedMeme.likes || 0);
       setComments(JSON.parse(localStorage.getItem(`meme_comments_${id}`)) || selectedMeme.comments || []);
     }
-  }, [id]);
-
+  }, [id]);*/
+  useEffect(() => {
+    const savedMemes = JSON.parse(localStorage.getItem("memes")) || [];
+    const selectedMeme = savedMemes.find((m) => m.id.toString() === id.toString());
+  
+    if (selectedMeme) {
+      setMeme(selectedMeme);
+  
+      // ✅ Get likes from LocalStorage
+      const storedLikes = JSON.parse(localStorage.getItem("likedMemes")) || [];
+      const likedMeme = storedLikes.find((m) => m.id === id);
+      setLikes(likedMeme ? likedMeme.likes : selectedMeme.likes || 0);
+  
+      // ✅ Get comments from LocalStorage
+      const storedComments = JSON.parse(localStorage.getItem(`meme_comments_${id}`)) || [];
+      setComments(storedComments); // ✅ Update state with stored comments
+    }
+  }, [id, likes, comments]); // ✅ Re-fetch when likes or comments change
+  
   // ✅ Handle Like Button
-  const handleLike = () => {
+  /*const handleLike = () => {
     const updatedLikes = likes + 1;
     setLikes(updatedLikes);
 
@@ -50,6 +67,34 @@ export default function MemeDetails() {
 
     localStorage.setItem("userData", JSON.stringify(storedUserData));
   };
+*/
+const handleLike = () => {
+  const updatedLikes = likes + 1;
+  setLikes(updatedLikes); // ✅ Update UI immediately
+
+  // ✅ Get existing liked memes from LocalStorage
+  let likedMemes = JSON.parse(localStorage.getItem("likedMemes")) || [];
+
+  // ✅ Check if meme is already in likedMemes array
+  const existingMemeIndex = likedMemes.findIndex(meme => meme.id === id);
+  
+  if (existingMemeIndex !== -1) {
+    // ✅ If meme exists, update like count
+    likedMemes[existingMemeIndex].likes = updatedLikes;
+  } else {
+    // ✅ If meme is new, add it to LocalStorage
+    likedMemes.push({ 
+      id, 
+      memeUrl: meme.memeUrl, 
+      username: meme.username, 
+      likes: updatedLikes 
+    });
+  }
+
+  // ✅ Store updated Liked Memes in Local Storage
+  localStorage.setItem("likedMemes", JSON.stringify(likedMemes));
+};
+
 
   // ✅ Handle Comment Submission
   const handleComment = () => {

@@ -22,11 +22,14 @@ export default function Explore() {
     });
   }, [page, category]);
 
-  // ✅ Fetch likes & comments from localStorage for sorting
+  // ✅ Fetch likes from localStorage and merge with memes
   useEffect(() => {
+    const likedMemes = JSON.parse(localStorage.getItem("likedMemes")) || [];
+    const likesMap = Object.fromEntries(likedMemes.map((m) => [m.id, m.likes])); // Create a map of likes
+
     const updatedMemes = memes.map((meme) => ({
       ...meme,
-      likes: parseInt(localStorage.getItem(`meme_likes_${meme.id}`)) || 0,
+      likes: likesMap[meme.id] || 0, // Use likes from localStorage if available
       comments: JSON.parse(localStorage.getItem(`meme_comments_${meme.id}`))?.length || 0,
     }));
 

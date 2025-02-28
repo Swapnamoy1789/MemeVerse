@@ -1,18 +1,30 @@
 import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { setMemes } from "../redux/memeSlice";
 import { fetchMemes } from "../utils/api";
 import { motion } from "framer-motion"; // ✅ Import Framer Motion for animations
+import { getAuth, signOut } from "firebase/auth"; // ✅ Firebase Authentication
 
 export default function Home() {
   const dispatch = useDispatch();
   const memes = useSelector((state) => state.memes.memes);
-  const [darkMode, setDarkMode] = useState(false); // ✅ Dark mode state
+  const [darkMode, setDarkMode] = useState(false);
+  const navigate = useNavigate();
+
+  // ✅ Firebase Authentication State
+  const auth = getAuth();
+  const user = auth.currentUser; // ✅ Get logged-in user
 
   useEffect(() => {
     fetchMemes().then((data) => dispatch(setMemes(data)));
   }, [dispatch]);
+
+  // ✅ Handle Logout
+  const handleLogout = async () => {
+    await signOut(auth);
+    navigate("/login"); // ✅ Redirect to login page
+  };
 
   return (
     <motion.div
@@ -21,15 +33,34 @@ export default function Home() {
       transition={{ duration: 0.5, ease: "easeOut" }}
       className={`${darkMode ? "bg-gray-900 text-white" : "bg-white text-black"} min-h-screen p-5`}
     >
-      {/* Dark Mode Toggle */}
-      <div className="flex justify-end">
+      {/* Dark Mode & Login/Logout Buttons */}
+      <div className="flex justify-between">
         <motion.button
-          whileTap={{ scale: 0.9 }} // ✅ Button Click Effect
+          whileTap={{ scale: 0.9 }}
           onClick={() => setDarkMode(!darkMode)}
           className="p-2 bg-gray-700 text-white rounded-lg"
         >
           {darkMode ? "☀️ Light Mode" : "🌙 Dark Mode"}
         </motion.button>
+
+        {user ? (
+          <motion.button
+            whileTap={{ scale: 0.9 }}
+            onClick={handleLogout}
+            className="p-2 bg-red-500 text-white rounded-lg"
+          >
+            🚪 Logout
+          </motion.button>
+        ) : (
+          <Link to="/login">
+            <motion.button
+              whileTap={{ scale: 0.9 }}
+              className="p-2 bg-blue-500 text-white rounded-lg"
+            >
+              🔑 Login
+            </motion.button>
+          </Link>
+        )}
       </div>
 
       <h1 className="text-3xl font-bold text-center mt-4">🔥 Trending Memes</h1>

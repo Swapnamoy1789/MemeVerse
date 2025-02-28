@@ -6,6 +6,7 @@ import MemeDetails from "./pages/MemeDetails";
 import NotFound from "./pages/Notfound";
 import Profile from "./pages/Profile";
 import Leaderboard from "./pages/Leaderboard";
+import Login from "./pages/Login";
 
 export default function App() {
   return (
@@ -16,7 +17,7 @@ export default function App() {
       <Route path="/meme/:id" element={<MemeDetails />} />
       <Route path="/profile" element={<Profile />} /> {/* ✅ Added profile page */}
       <Route path="/leaderboard" element={<Leaderboard/>} />
-
+      <Route path="/login" element={<Login/>} />
       <Route path="*" element={<NotFound/>} /> {/* Catch-all route for 404 */}
 
     </Routes>

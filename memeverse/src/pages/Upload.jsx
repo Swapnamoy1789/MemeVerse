@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { generateMemeCaption, fetchMemes } from "../utils/api";
-import { db } from "../utils/firebase"; // Import Firestore
-import { collection, addDoc, serverTimestamp } from "firebase/firestore";
+import { db, auth } from "../utils/firebase"; 
+import { collection, addDoc, serverTimestamp, doc, getDoc } from "firebase/firestore";
 
 export default function Upload() {
   const [topText, setTopText] = useState("");
@@ -10,60 +10,74 @@ export default function Upload() {
   const [loading, setLoading] = useState(false);
   const [memes, setMemes] = useState([]);
   const [selectedTemplate, setSelectedTemplate] = useState("");
+  const [user, setUser] = useState(null);
   const [username, setUsername] = useState("Anonymous");
 
-  // ✅ Fetch Meme Templates
+  // ✅ Fetch Meme Templates & User Info
   useEffect(() => {
-    fetchMemes().then((data) => {
-      setMemes(data);
-      if (data.length > 0) {
-        setSelectedTemplate(data[0].id);
-      }
-    });
+    const fetchData = async () => {
+      const memeData = await fetchMemes();
+      setMemes(memeData);
+      if (memeData.length > 0) setSelectedTemplate(memeData[0].id);
+      
+      auth.onAuthStateChanged(async (currentUser) => {
+        if (currentUser) {
+          setUser(currentUser);
+          const userRef = doc(db, "users", currentUser.uid);
+          const userSnap = await getDoc(userRef);
+          if (userSnap.exists()) {
+            setUsername(userSnap.data().name || "Anonymous");
+          } else {
+            setUsername(currentUser.displayName || "Anonymous");
+          }
+        } else {
+          setUser(null);
+          setUsername("Anonymous");
+        }
+      });
+    };
 
-    // ✅ Get Username from LocalStorage
-    const storedUserData = JSON.parse(localStorage.getItem("userData"));
-    if (storedUserData?.name) {
-      setUsername(storedUserData.name);
-    }
+    fetchData();
   }, []);
 
+  // ✅ Handle Meme Upload
   const handleGenerateMeme = async () => {
     if (!selectedTemplate) {
       alert("Please select a meme template!");
       return;
     }
-  
+    if (!user) {
+      alert("You must be logged in to upload memes!");
+      return;
+    }
+
     setLoading(true);
     const url = await generateMemeCaption(selectedTemplate, topText, bottomText);
-    const username = localStorage.getItem("name") || "Anonymous"; // ✅ Get the correct username
-  
+
     if (url) {
-      console.log("Meme successfully generated:", url);
       setMemeUrl(url);
-  
-      // ✅ Save to Firestore with uploadedBy field
+
+      // ✅ Save meme to Firestore
       try {
-        const docRef = await addDoc(collection(db, "memes"), {
+        await addDoc(collection(db, "memes"), {
           topText,
           bottomText,
           memeUrl: url,
           templateId: selectedTemplate,
-          uploadedBy: username, // ✅ Store correct username
+          uploadedBy: user.uid,
+          username: username, // ✅ Store correct username
           createdAt: serverTimestamp(),
         });
-  
-        console.log("🔥 Meme added to Firestore with ID:", docRef.id);
-        alert("Meme saved to Firestore!");
+
+        alert("Meme successfully uploaded!");
       } catch (error) {
         console.error("🔥 Error saving meme to Firestore:", error);
       }
     } else {
-      console.error("Failed to generate meme");
+      console.error("❌ Failed to generate meme");
     }
     setLoading(false);
   };
-  
 
   return (
     <div className="p-5">
@@ -77,11 +91,15 @@ export default function Upload() {
           value={selectedTemplate}
           onChange={(e) => setSelectedTemplate(e.target.value)}
         >
-          {memes.map((meme) => (
-            <option key={meme.id} value={meme.id}>
-              {meme.name}
-            </option>
-          ))}
+          {memes.length > 0 ? (
+            memes.map((meme) => (
+              <option key={meme.id} value={meme.id}>
+                {meme.name}
+              </option>
+            ))
+          ) : (
+            <option disabled>Loading memes...</option>
+          )}
         </select>
       </div>
 

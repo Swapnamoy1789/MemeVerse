@@ -1,5 +1,9 @@
 import axios from "axios";
 
+
+  
+
+
 // Fetch memes from Imgflip API
 export const fetchMemes = async (page = 1) => {
     const cachedMemes = JSON.parse(localStorage.getItem("memes"));
